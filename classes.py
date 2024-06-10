@@ -22,63 +22,75 @@ class Game:
         print("Welcome to the car racing game!")
 
     def start_race(self):
-        Race()
+        Race().start_race()
 
 
 class Track:
-    line_1 = ["_", "|", "_", "_", "_", "_", "_", "_", "_", "_", "_", "|"]
-    line_2 = ["_", "|", "_", "_", "_", "_", "_", "_", "_", "_", "_", "|"]
+    line_1 = ["_", "|", "_", "_", "_", "_", "_", "_", "_", "_", "_", "|", "_"]
+    line_2 = ["_", "|", "_", "_", "_", "_", "_", "_", "_", "_", "_", "|", "_"]
 
     def __init__(self, car_1, car_2):
-        self.length = 24
-        self.line_1 = ["_" for _ in range(self.length)]
-        self.line_2 = ["_" for _ in range(self.length)]
         self.line_1[0] = car_1
         self.line_2[0] = car_2
 
     def get_start_finish(self):
-        print("START _|" + "".join(self.line_1) + "|_ FINISH")
-        print("START _|" + "".join(self.line_2) + "|_ FINISH")
+        print("START " + "".join(self.line_1) + " FINISH")
+        print("START " + "".join(self.line_2) + " FINISH")
 
 
 class Car:
-    def __init__(self, model, speed):
+    def __init__(self, model):
         self.model = model
-        self.speed = speed
-        self.position = 0
+        self.speed = random.randint(1, 3)
 
 
 class Race:
     def __init__(self):
-        self.car_1 = Car("X", random.randint(1, 3))
-        self.car_2 = Car("0", random.randint(1, 3))
+        self.car_1 = Car("X")
+        self.car_2 = Car("0")
         self.track = Track(self.car_1.model, self.car_2.model)
-        self.start_race()
-
+        self.ended = False
     def start_race(self):
-        while True:
-            self.move_cars()
+        while not self.ended:
             self.track.get_start_finish()
-            if self.get_winner():
-                break
+            self.move_cars()
+            if self.get_winner() == True:
+                self.ended = True
             time.sleep(1)
 
     def move_cars(self):
-        self.move_car(self.car_1, self.track.line_1)
-        self.move_car(self.car_2, self.track.line_2)
+        if self.move_car(self.car_1, self.track.line_1) or self.move_car(self.car_2, self.track.line_2):
+            return True
+        return False
 
-    def move_car(self, car, line):
-        line[car.position] = "_"
-        car.position += random.randint(1, 3)
-        if car.position >= len(line) - 1:
-            car.position = len(line) - 1
-        line[car.position] = car.model
+    def move_car(self, car: Car, line: list):
+        current_position: int = line.index(car.model)
+        new_position: int = current_position + car.speed
+        if new_position >= len(line) - 1:
+            line[current_position] = "_"
+            line[-1] = car.model
+            return True
+        if new_position <= 1:
+            new_position = 2
+        line[current_position] = "_"
+        line[new_position] = car.model
+        return False
 
     def get_winner(self):
-        if self.car_1.position == len(self.track.line_1) - 1:
-            print("Car X WINS!!")
+        car_1_finished = None
+        car_2_finished = None
+
+        if self.track.line_1[-1] <= "X":
+            car_1_finished = True
+        if self.track.line_2[-1] <= "0":
+            car_2_finished = True
+        if car_1_finished and car_2_finished:
+            print("it's a DRAW!!")
             return True
-        if self.car_2.position == len(self.track.line_2) - 1:
-            print("Car 0 WINS!!")
+        elif car_1_finished:
+            print("Car X is the winner")
+            return True
+        elif car_2_finished:
+            print("Car 0 is the winner")
             return True
         return False
