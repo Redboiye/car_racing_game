@@ -1,3 +1,4 @@
 from classes import Game
 
-Game().start_race()
+game = Game()
+game.start_race()
